@@ -28,13 +28,17 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(password);
     const refId = generateRefId();
 
-    let referredById: string | null = null;
+    let referredByString: string | null = null;
+    
+    // If a referral code was provided in the registration
     if (refBy) {
       const referrer = await prisma.user.findFirst({
-        where: { refId: refBy },
+        where: { refId: refBy }, // We look up the person owning that refId
       });
+      
       if (referrer) {
-        referredById = referrer.id;
+        // FIX: Assign the refId (String), not the id (Number)
+        referredByString = referrer.refId; 
       }
     }
 
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         phone,
         refId,
-        refBy: referredById?.toString() || null,
+        refBy: referredByString, // This matches the String type in your schema
       },
     });
 
