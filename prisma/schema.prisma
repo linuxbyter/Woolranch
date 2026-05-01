@@ -8,138 +8,143 @@ datasource db {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
-  name              String
-  email             String    @unique
-  username          String?   @unique
-  password          String
-  refId             String    @unique @default(cuid())
-  refBy             String?
-  phone             String?
-  phoneCode         String?
-  balance           Float     @default(0)
-  investBalance     Float     @default(0)
-  totalIncome       Float     @default(0)
-  todayIncome       Float     @default(0)
-  vipLevel          Int       @default(0)
-  investor          Boolean   @default(false)
-  ip                String?
-  rememberToken     String?
-  emailVerifiedAt   DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id              Int          @id @default(autoincrement())
+  name            String
+  email           String       @unique
+  username        String?      @unique
+  password        String
+  refId           String       @unique @default(cuid())
+  refBy           String?
+  phone           String?
+  phoneCode       String?
+  balance         Float        @default(0)
+  investBalance   Float        @default(0)
+  totalIncome     Float        @default(0)
+  todayIncome     Float        @default(0)
+  vipLevel        Int          @default(0)
+  investor        Boolean      @default(false)
+  ip              String?
+  rememberToken   String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  deposits          Deposit[]
-  withdrawals        Withdrawal[]
-  checkins          Checkin[]
-  purchases          Purchase[]
-  userLedgers       UserLedger[]
-  referrals         User[]    @relation("Referral", fields: [refBy], references: [refId])
-  referredBy        User?     @relation("Referral")
+  deposits    Deposit[]
+  withdrawals Withdrawal[]
+  checkins    Checkin[]
+  purchases   Purchase[]
+  userLedgers UserLedger[]
+  
+  // FIX APPLIED HERE:
+  // The 'many' side (array) only needs the relation name.
+  referrals   User[]       @relation("Referral")
+  
+  // The 'one' side (optional) carries the fields and references.
+  referredBy  User?        @relation("Referral", fields: [refBy], references: [refId])
 }
 
 model Deposit {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   userId        Int
   methodName    String
-  orderId       String    @unique
+  orderId       String   @unique
   transactionId String?
   number        String?
   amount        Float
-  chargeAmount  Float     @default(0)
+  chargeAmount  Float    @default(0)
   finalAmount   Float
   date          DateTime
-  status        String    @default("pending")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  user          User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Withdrawal {
-  id              Int       @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   userId          Int
   paymentMethodId Int?
-  orderId         String    @unique
+  orderId         String         @unique
   transactionId   String?
   amount          Float
-  chargeAmount    Float     @default(0)
+  chargeAmount    Float          @default(0)
   finalAmount     Float
   accountName     String?
   accountNumber   String?
   bankName        String?
-  status          String    @default("pending")
+  status          String         @default("pending")
   date            DateTime
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  user            User      @relation(fields: [userId], references: [id])
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
 }
 
 model PaymentMethod {
-  id          Int       @id @default(autoincrement())
-  name        String
-  tag         String    @unique
-  type        String
-  auto        Boolean   @default(false)
-  status      String    @default("inactive")
-  address     String?
-  image       String?
-  settings    Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  tag       String   @unique
+  type      String
+  auto      Boolean  @default(false)
+  status    String   @default("inactive")
+  address   String?
+  image     String?
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   withdrawals Withdrawal[]
 }
 
 model UserLedger {
-  id           Int       @id @default(autoincrement())
-  userId       Int
-  reason       String
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  reason        String
   particulating String?
-  amount       Float
-  debit        Float?
-  date         DateTime
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  amount        Float
+  debit         Float?
+  date          DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  user         User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Checkin {
-  id       Int      @id @default(autoincrement())
-  userId   Int
-  date     DateTime
-  amount   Float
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  date      DateTime
+  amount    Float
   createdAt DateTime @default(now())
 
-  user     User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Purchase {
-  id              Int       @id @default(autoincrement())
-  userId          Int
-  packageId       Int?
-  amount          Float
-  validity        DateTime
-  date            DateTime
-  status          String    @default("active")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  packageId Int?
+  amount    Float
+  validity  DateTime
+  date      DateTime
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user            User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Setting {
-  id               Int      @id @default(autoincrement())
-  appName          String   @default("Wool Ranch")
-  openDeposit      Boolean  @default(true)
-  openWithdraw     Boolean  @default(true)
-  autoDeposit      Boolean  @default(false)
-  minDeposit       Float    @default(100)
-  minWithdraw      Float    @default(500)
-  withdrawCharge   Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  appName        String   @default("Wool Ranch")
+  openDeposit    Boolean  @default(true)
+  openWithdraw   Boolean  @default(true)
+  autoDeposit    Boolean  @default(false)
+  minDeposit     Float    @default(100)
+  minWithdraw    Float    @default(500)
+  withdrawCharge Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
