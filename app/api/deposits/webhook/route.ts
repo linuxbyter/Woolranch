@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const isCompleted = status === 'complete' || status === 'COMPLETED' || status === 'paid';
 
     if (isCompleted) {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: any) => {
         await tx.deposit.update({
           where: { id: deposit.id },
           data: { status: 'approved' },

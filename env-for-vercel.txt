@@ -1,0 +1,6 @@
+DATABASE_URL=postgresql://neondb_owner:npg_UG53ntrkKzuT@ep-winter-water-alrofmph.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require
+JWT_SECRET=woolranch2024supersecretkey
+INTASEND_PUBLISHABLE_KEY=ISPubKey_test_846763aa-a255-43f0-9ed9-2edfe5d88627
+INTASEND_SECRET_KEY=ISSecretKey_test_13c4865c-1ec2-4863-a52a-c325411300d5
+INTASEND_ENVIRONMENT=sandbox
+NEXT_PUBLIC_BASE_URL=
