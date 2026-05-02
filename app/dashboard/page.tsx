@@ -30,19 +30,27 @@ export default function DashboardPage() {
       if (response.data.success) {
         setUser(response.data.user);
       } else {
-        router.push('/');
+        console.warn("No valid user session found. (Redirect disabled for debugging)");
+        // Uncomment the line below once testing is complete:
+        // router.push('/');
       }
-    } catch {
-      router.push('/');
+    } catch (error) {
+      console.error("Error fetching user details from API:", error);
+      // Uncomment the line below once testing is complete:
+      // router.push('/');
     } finally {
       setLoading(false);
     }
   };
 
   const copyRefLink = () => {
-    const link = `${window.location.origin}/?ref=${user?.refId}`;
+    if (!user?.refId) {
+      alert('No referral ID available!');
+      return;
+    }
+    const link = `${window.location.origin}/?ref=${user.refId}`;
     navigator.clipboard.writeText(link);
-    alert('Referral link copied!');
+    alert('Referral link copied to clipboard!');
   };
 
   if (loading) {
@@ -58,60 +66,69 @@ export default function DashboardPage() {
       <header className="bg-green-800 text-white p-4">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold">Wool Ranch</h1>
-          <button onClick={() => router.push('/')} className="text-sm">Logout</button>
+          <button onClick={() => router.push('/')} className="text-sm bg-green-700 hover:bg-green-600 px-3 py-1 rounded">Logout</button>
         </div>
       </header>
 
       <main className="max-w-md mx-auto p-4">
-        <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-2xl p-6 text-white mb-6">
+        {/* Balance Section */}
+        <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-2xl p-6 text-white mb-6 shadow-md">
           <p className="text-green-200 text-sm">Available Balance</p>
           <p className="text-4xl font-bold">KES {user?.balance?.toLocaleString() || 0}</p>
         </div>
 
+        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button
             onClick={() => router.push('/deposit')}
-            className="bg-green-600 text-white p-6 rounded-xl flex flex-col items-center"
+            className="bg-green-600 hover:bg-green-500 transition-colors text-white p-6 rounded-xl flex flex-col items-center justify-center shadow"
           >
-            <span className="text-2xl mb-2">+</span>
+            <span className="text-3xl mb-1">+</span>
             <span className="font-medium">Deposit</span>
           </button>
-          <button className="bg-blue-600 text-white p-6 rounded-xl flex flex-col items-center">
-            <span className="text-2xl mb-2">-</span>
+          
+          {/* Withdrawal Button now routes to /withdraw */}
+          <button 
+            onClick={() => router.push('/withdraw')}
+            className="bg-blue-600 hover:bg-blue-500 transition-colors text-white p-6 rounded-xl flex flex-col items-center justify-center shadow"
+          >
+            <span className="text-3xl mb-1">-</span>
             <span className="font-medium">Withdraw</span>
           </button>
         </div>
 
-        <div className="bg-white rounded-xl p-4 mb-4">
+        {/* User Stats Card */}
+        <div className="bg-white rounded-xl p-4 mb-4 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-3">My Stats</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Total Income</span>
-              <span className="font-medium">KES {user?.totalIncome?.toLocaleString() || 0}</span>
+              <span className="font-medium text-gray-800">KES {user?.totalIncome?.toLocaleString() || 0}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">VIP Level</span>
-              <span className="font-medium">Level {user?.vipLevel || 0}</span>
+              <span className="font-medium text-gray-800">Level {user?.vipLevel || 0}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Team Size</span>
-              <span className="font-medium">{user?.teamSize || 0}</span>
+              <span className="font-medium text-gray-800">{user?.teamSize || 0}</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4">
+        {/* Referral System */}
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-3">Refer & Earn</h3>
           <div className="flex gap-2">
             <input
               type="text"
               readOnly
               value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?ref=${user?.refId || ''}`}
-              className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm"
+              className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 outline-none"
             />
             <button
               onClick={copyRefLink}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
+              className="bg-green-600 hover:bg-green-500 transition-colors text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
               Copy
             </button>
