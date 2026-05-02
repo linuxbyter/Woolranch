@@ -89,6 +89,8 @@ export async function POST(request: NextRequest) {
     // 5. Fire IntaSend STK Push if method is auto
     if (paymentMethod.auto && paymentMethod.tag === 'intasend') {
       try {
+        console.log('Sending STK Push payload:', { phone: formattedPhone, amount, reference });
+
         const stkResponse = await initiateStkPush({
           phone: formattedPhone,
           amount: parseFloat(amount),
@@ -97,25 +99,38 @@ export async function POST(request: NextRequest) {
           callbackUrl: `${baseUrl}/api/deposits/webhook`,
         });
 
+        console.log('IntaSend API returned success:', stkResponse);
+
+        // IntaSend returns an invoice object that contains the id. 
+        // We use its fallback just in case it is structured as stkResponse.id or stkResponse.invoice.invoice_id
+        const invoiceId = stkResponse?.invoice?.invoice_id || stkResponse?.invoice_id || stkResponse?.id;
+
         await prisma.deposit.update({
           where: { id: deposit.id },
-          data: { transactionId: stkResponse.invoice_id },
+          data: { transactionId: invoiceId },
         });
 
         return NextResponse.json({
           success: true,
           message: 'STK Push sent! Check your phone and enter your MPesa PIN.',
-          invoiceId: stkResponse.invoice_id,
+          invoiceId: invoiceId,
           depositId: deposit.id,
         });
       } catch (error: any) {
+        // Log the exact internal error from IntaSend to your terminal logs
+        console.error('IntaSend STK Push Error Details:', error);
+
         await prisma.deposit.update({
           where: { id: deposit.id },
           data: { status: 'failed' },
         });
 
         return NextResponse.json(
-          { success: false, message: error.message || 'STK Push initialization failed' },
+          { 
+            success: false, 
+            message: error.message || 'STK Push initialization failed',
+            details: error.toString() 
+          },
           { status: 500 }
         );
       }
