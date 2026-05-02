@@ -31,16 +31,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
+    // Count direct referrals linked to this user's unique refId
     const firstLevelUsers = await prisma.user.count({
       where: { refBy: userData.refId },
     });
 
-    const teamSize = firstLevelUsers;
+    const teamSize = firstLevelUsers || 0;
 
     return NextResponse.json({
       success: true,
       user: {
-        ...userData,
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        refId: userData.refId,
+        balance: Number(userData.balance) || 0,
+        investBalance: Number(userData.investBalance) || 0,
+        totalIncome: Number(userData.totalIncome) || 0,
+        todayIncome: Number(userData.todayIncome) || 0,
+        vipLevel: userData.vipLevel || 1,
+        investor: userData.investor || false,
+        createdAt: userData.createdAt,
         teamSize,
       },
     });
