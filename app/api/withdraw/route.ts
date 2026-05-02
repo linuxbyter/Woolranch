@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { amount, phone } = body;
 
-    // 1. Validate Input data
+    // 1. Validate input data
     const withdrawAmount = parseFloat(amount);
     if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
       return NextResponse.json(
@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Fetch the user's fresh balance from database
+    // 2. Fetch the user's fresh balance and name from database
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { balance: true },
+      select: { balance: true, name: true },
     });
 
     if (!dbUser) {
@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const reference = `WD${Date.now()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
     // 4. Thread-safe Transaction: Deduct balance and create the record
     await prisma.$transaction(async (tx) => {
       // A. Deduct the amount from user's account
@@ -56,12 +58,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // B. Create a pending withdrawal record for admin approval
+      // B. Create the withdrawal record matching your Prisma schema
       await tx.withdrawal.create({
         data: {
           userId: user.id,
           amount: withdrawAmount,
-          phone: phone, // Changed from 'number' to 'phone' to match schema expectations
+          finalAmount: withdrawAmount,
+          orderId: reference,
+          accountNumber: phone,       // Map phone to accountNumber
+          accountName: dbUser.name || 'User Payout',
+          bankName: 'MPESA',          // Identify payment method
           status: 'pending',
           date: new Date(),
         },
