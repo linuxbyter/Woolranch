@@ -65,22 +65,22 @@ export async function POST(request: NextRequest) {
           amount: withdrawAmount,
           finalAmount: withdrawAmount,
           orderId: reference,
-          accountNumber: phone,       // Map phone to accountNumber
+          accountNumber: phone,
           accountName: dbUser.name || 'User Payout',
-          bankName: 'MPESA',          // Identify payment method
+          bankName: 'MPESA',
           status: 'pending',
           date: new Date(),
         },
       });
 
-      // C. Record this deduction in the user's financial ledger
+      // C. Record this deduction in the user's financial ledger using the correct fields
       await tx.userLedger.create({
         data: {
           userId: user.id,
           reason: 'withdrawal_request',
           particulating: `Withdrawal request to MPesa (${phone})`,
           amount: withdrawAmount,
-          credit: withdrawAmount,
+          debit: withdrawAmount, // Changed from credit to debit to match schema
           date: new Date(),
         },
       });
