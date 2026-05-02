@@ -8,39 +8,38 @@ datasource db {
 }
 
 model User {
-  id              Int          @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   name            String
-  email           String       @unique
-  username        String?      @unique
+  email           String        @unique
+  username        String?       @unique
   password        String
-  refId           String       @unique @default(cuid())
+  refId           String        @unique @default(cuid())
   refBy           String?
   phone           String?
   phoneCode       String?
-  balance         Float        @default(0)
-  investBalance   Float        @default(0)
-  totalIncome     Float        @default(0)
-  todayIncome     Float        @default(0)
-  vipLevel        Int          @default(0)
-  investor        Boolean      @default(false)
+  balance         Float         @default(0)
+  investBalance   Float         @default(0)
+  totalIncome     Float         @default(0)
+  todayIncome     Float         @default(0)
+  vipLevel        Int           @default(0)
+  investor        Boolean       @default(false)
   ip              String?
   rememberToken   String?
   emailVerifiedAt DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   deposits    Deposit[]
   withdrawals Withdrawal[]
   checkins    Checkin[]
   purchases   Purchase[]
   userLedgers UserLedger[]
-  
-  // FIX APPLIED HERE:
+
   // The 'many' side (array) only needs the relation name.
-  referrals   User[]       @relation("Referral")
-  
+  referrals   User[]          @relation("Referral")
+
   // The 'one' side (optional) carries the fields and references.
-  referredBy  User?        @relation("Referral", fields: [refBy], references: [refId])
+  referredBy  User?           @relation("Referral", fields: [refBy], references: [refId])
 }
 
 model Deposit {
@@ -83,17 +82,17 @@ model Withdrawal {
 }
 
 model PaymentMethod {
-  id        Int      @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   name      String
-  tag       String   @unique
+  tag       String       @unique
   type      String
-  auto      Boolean  @default(false)
-  status    String   @default("inactive")
+  auto      Boolean      @default(false)
+  status    String       @default("inactive")
   address   String?
   image     String?
   settings  Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   withdrawals Withdrawal[]
 }
@@ -122,10 +121,11 @@ model Checkin {
   user User @relation(fields: [userId], references: [id])
 }
 
+// 1. UPDATED: Purchase links to User and the new Product model
 model Purchase {
   id        Int      @id @default(autoincrement())
   userId    Int
-  packageId Int?
+  packageId Int?     // This links directly to the Product's ID
   amount    Float
   validity  DateTime
   date      DateTime
@@ -133,7 +133,24 @@ model Purchase {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [packageId], references: [id])
+}
+
+// 2. ADDED: The Product model for your investment packages
+model Product {
+  id           Int      @id @default(autoincrement())
+  name         String   // e.g., "TBL 01"
+  price        Float    // Investment cost (e.g., 500)
+  dailyIncome  Float    // Daily return amount (e.g., 50)
+  revenueDays  Int      // Plan validity duration (e.g., 180)
+  totalRevenue Float    // Total total yield (e.g., 9000)
+  category     String   @default("Fixed Fund") // Fixed Fund, Welfare Fund, Yearly Fund
+  status       String   @default("active")    // active or inactive
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  purchases Purchase[]
 }
 
 model Setting {
