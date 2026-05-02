@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           amount: withdrawAmount,
-          number: phone,
+          phone: phone, // Changed from 'number' to 'phone' to match schema expectations
           status: 'pending',
           date: new Date(),
         },
