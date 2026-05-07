@@ -101,10 +101,9 @@ export async function POST(request: NextRequest) {
 
         console.log('IntaSend API returned success:', stkResponse);
 
-        // IntaSend returns an invoice object that contains the id. 
-        // We use its fallback just in case it is structured as stkResponse.id or stkResponse.invoice.invoice_id
-        const invoiceId = stkResponse?.invoice?.invoice_id || stkResponse?.invoice_id || stkResponse?.id;
-
+        // We cast to 'any' here so TypeScript lets us check all possible ID locations during debugging
+const invoiceId = (stkResponse as any)?.invoice?.invoice_id || (stkResponse as any)?.invoice_id || (stkResponse as any)?.id;
+        
         await prisma.deposit.update({
           where: { id: deposit.id },
           data: { transactionId: invoiceId },
